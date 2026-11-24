@@ -27,15 +27,16 @@ mods() { git show "$1:go.mod" | awk '/^require \(/{r=1;next} r&&/^\)/{r=0} r{pri
 comm -13 <(mods "$old") <(mods "$new") | grep -E "$google" || echo "(none)"
 echo
 
-echo "== outbound hosts added in runtime code"
-added=$(git --no-pager diff -U0 "$old" "$new" -- . \
+echo "== outbound hosts added in runtime code (and the shipped Wikimedia plugin)"
+added=$( ( git --no-pager diff -U0 "$old" "$new" -- . \
   ':(exclude)*_test.go' ':(exclude)**/tests/**' ':(exclude)**/testdata/**' \
   ':(exclude)**/i18n/**' ':(exclude)resources/i18n/**' ':(exclude)docs/**' \
   ':(exclude)*.md' ':(exclude)**/package-lock.json' ':(exclude)go.sum' \
   ':(exclude)plugins/examples/**' ':(exclude).github/**' ':(exclude).forgejo/**' \
   ':(exclude)nordic/**' ':(exclude)*.test.js' ':(exclude)*.test.jsx' \
   ':(exclude)*.svg' ':(exclude)release/**' \
-  | grep -E '^\+[^+]' | grep -vE '^\+\s*(//|#|\*|/\*)' \
+  ; git --no-pager diff -U0 "$old" "$new" -- plugins/examples/wikimedia ':(exclude)*_test.go' ':(exclude)*.md' \
+  ) | grep -E '^\+[^+]' | grep -vE '^\+\s*(//|#|\*|/\*)' \
   | grep -oE 'https?://[A-Za-z0-9.-]+' | sed -E 's#^https?://##' | tr 'A-Z' 'a-z' | sort -u || true)
 
 allowed() {

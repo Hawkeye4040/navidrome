@@ -115,6 +115,9 @@ jobs:
           set -euo pipefail
           podman run --rm --entrypoint /app/navidrome "$IMAGE:${{ needs.vet.outputs.base }}-nordic" --version
 
+      - name: Build Wikimedia plugin
+        run: nordic/build-wikimedia.sh "$RUNNER_TEMP/dist"
+
       - name: Push
         env:
           FORGE_TOKEN: ${{ secrets.FORGE_TOKEN }}
@@ -124,3 +127,7 @@ jobs:
           podman push "$IMAGE:${{ needs.vet.outputs.base }}-nordic"
           podman push "$IMAGE:latest"
           podman logout "$REGISTRY"
+          # Wikimedia plugin -> Forgejo generic package registry (replace on rebuild)
+          pkg="https://$REGISTRY/api/packages/nordic/generic/navidrome-wikimedia/${{ needs.vet.outputs.base }}-nordic/wikimedia.ndp"
+          curl -fsS -o /dev/null -u "nordic-ci:$FORGE_TOKEN" -X DELETE "$pkg" || true
+          curl -fsS -u "nordic-ci:$FORGE_TOKEN" --upload-file "$RUNNER_TEMP/dist/wikimedia.ndp" "$pkg"

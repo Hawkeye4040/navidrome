@@ -5,7 +5,9 @@
 EnableInsightsCollector = false
 EnableGravatar = false
 EnableM3UExternalAlbumArt = false
-Agents = "listenbrainz"
+# wikimedia = artist bios/photos/links (plugin, Wikipedia + Wikidata + DBpedia).
+# Plugin agents are tried in order; listenbrainz still covers similar artists.
+Agents = "wikimedia,listenbrainz"
 # UILoginBackgroundURL: left at the nordic default (built-in offline image).
 # GATrackingID: option removed in the nordic build.
 
@@ -16,4 +18,7 @@ Enabled = false
 Enabled = false
 
 [ListenBrainz]
+Enabled = true
+
+[Plugins]
 Enabled = true

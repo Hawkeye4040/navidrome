@@ -13,6 +13,11 @@ ws.audioscrobbler.com
 api.deezer.com
 auth.deezer.com
 pipe.deezer.com
+# Wikimedia plugin (bios, links, images) and the image files Navidrome fetches
+.wikipedia.org
+.wikidata.org
+.wikimedia.org
+dbpedia.org
 # Project links
 .navidrome.org
 github.com
