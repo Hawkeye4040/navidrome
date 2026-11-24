@@ -1,0 +1,126 @@
+# nordic build: runs on Forgejo (forge.nordicsystems.tech), which pull-mirrors
+# github.com/Hawkeye4040/navidrome. Runner: rootless Podman on Fedora,
+# registered with the label "nordic-podman" (host executor).
+name: nordic
+
+on:
+  push:
+    branches: [nordic]
+  schedule:
+    - cron: "17 4 * * 1" # weekly, Monday 04:17 UTC
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Upstream tag to vet (blank = newest upstream release)"
+        required: false
+        default: ""
+
+env:
+  UPSTREAM: https://github.com/navidrome/navidrome.git
+  REGISTRY: forge.nordicsystems.tech
+  IMAGE: forge.nordicsystems.tech/nordic/navidrome
+
+jobs:
+  # Vet the upstream release: diff-vet against the newest vetted/<tag>, then repo-vet.
+  vet:
+    runs-on: nordic-podman
+    outputs:
+      target: ${{ steps.refs.outputs.target }}
+      base: ${{ steps.refs.outputs.base }}
+    steps:
+      - uses: https://code.forgejo.org/actions/checkout@v4
+        with:
+          ref: nordic
+          fetch-depth: 0
+
+      - name: Fetch upstream release tags
+        run: git fetch --force --no-tags "$UPSTREAM" '+refs/tags/v*:refs/tags/v*'
+
+      - name: Resolve refs
+        id: refs
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+        run: |
+          set -euo pipefail
+          target=${INPUT_TAG:-$(git tag -l 'v*' --sort=-v:refname | grep -vE -- '-(rc|beta|alpha)' | head -1)}
+          vetted=$(git tag -l 'vetted/v*' --sort=-v:refname | head -1)
+          base=$(git describe --tags --abbrev=0 --match 'v*' nordic)
+          [ -n "$vetted" ] || { echo "no vetted/* tag found" >&2; exit 2; }
+          echo "target=$target" >>"$GITHUB_OUTPUT"
+          echo "base=$base" >>"$GITHUB_OUTPUT"
+          echo "vetted=$vetted" >>"$GITHUB_OUTPUT"
+          echo "target=$target vetted=$vetted nordic-base=$base"
+
+      - name: diff-vet
+        run: nordic/diff-vet.sh "${{ steps.refs.outputs.vetted }}" "${{ steps.refs.outputs.target }}"
+
+      - name: repo-vet
+        # The vetting script is private and lives only on the runner host.
+        # Set the Forgejo repo variable REPO_VET_CMD to its full command line.
+        # It receives NORDIC_SRC (checkout of the upstream tag) and NORDIC_TAG.
+        env:
+          REPO_VET_CMD: ${{ vars.REPO_VET_CMD }}
+          NORDIC_TAG: ${{ steps.refs.outputs.target }}
+        run: |
+          set -euo pipefail
+          if [ -z "$REPO_VET_CMD" ]; then
+            echo "::warning::REPO_VET_CMD not set; repo-vet skipped"
+            exit 0
+          fi
+          export NORDIC_SRC="$RUNNER_TEMP/upstream-$NORDIC_TAG"
+          rm -rf "$NORDIC_SRC"
+          git worktree add --detach "$NORDIC_SRC" "$NORDIC_TAG"
+          trap 'git worktree remove --force "$NORDIC_SRC"' EXIT
+          bash -c "$REPO_VET_CMD"
+
+      - name: Rebase needed?
+        run: |
+          if [ "${{ steps.refs.outputs.target }}" != "${{ steps.refs.outputs.base }}" ]; then
+            echo "::error::nordic is based on ${{ steps.refs.outputs.base }}; upstream released ${{ steps.refs.outputs.target }}. Review this run, then rebase nordic onto it."
+            exit 1
+          fi
+
+  # Build whatever nordic currently is. Runs even when a rebase is pending,
+  # so weekly runs still pick up Alpine security updates for the shipped tag.
+  build:
+    runs-on: nordic-podman
+    needs: vet
+    if: ${{ !cancelled() && needs.vet.outputs.base != '' }}
+    steps:
+      - uses: https://code.forgejo.org/actions/checkout@v4
+        with:
+          ref: nordic
+          fetch-depth: 0
+
+      - name: Fetch upstream release tags
+        run: git fetch --force --no-tags "$UPSTREAM" '+refs/tags/v*:refs/tags/v*'
+
+      - name: Deny-list (source)
+        run: nordic/deny-list.sh source .
+
+      - name: Build image
+        run: |
+          set -euo pipefail
+          base=${{ needs.vet.outputs.base }}
+          podman build --target final \
+            --build-arg GIT_TAG="$base-nordic" \
+            --build-arg GIT_SHA="$(git rev-parse --short HEAD)" \
+            -t "$IMAGE:$base-nordic" -t "$IMAGE:latest" .
+
+      - name: Deny-list (image)
+        run: nordic/deny-list.sh image "$IMAGE:${{ needs.vet.outputs.base }}-nordic"
+
+      - name: Smoke test
+        run: |
+          set -euo pipefail
+          podman run --rm --entrypoint /app/navidrome "$IMAGE:${{ needs.vet.outputs.base }}-nordic" --version
+
+      - name: Push
+        env:
+          FORGE_TOKEN: ${{ secrets.FORGE_TOKEN }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$FORGE_TOKEN" | podman login "$REGISTRY" -u nordic-ci --password-stdin
+          podman push "$IMAGE:${{ needs.vet.outputs.base }}-nordic"
+          podman push "$IMAGE:latest"
+          podman logout "$REGISTRY"

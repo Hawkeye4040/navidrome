@@ -1,0 +1,19 @@
+# nordic runtime lockdown for music.nordicsystems.tech.
+# The nordic build already defaults most of this; set explicitly anyway so the
+# deploy stays locked down even if a rebase ever drops a default flip.
+
+EnableInsightsCollector = false
+EnableGravatar = false
+EnableM3UExternalAlbumArt = false
+Agents = "listenbrainz"
+# UILoginBackgroundURL: left at the nordic default (built-in offline image).
+# GATrackingID: option removed in the nordic build.
+
+[LastFM]
+Enabled = false
+
+[Deezer]
+Enabled = false
+
+[ListenBrainz]
+Enabled = true
