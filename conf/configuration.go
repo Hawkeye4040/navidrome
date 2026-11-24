@@ -1073,7 +1073,7 @@ func setViperDefaults() {
 	viper.SetDefault("transcoding.maxconcurrent", 0)
 	viper.SetDefault("transcoding.maxconcurrentperuser", 0)
 	viper.SetDefault("transcoding.enablecancellation", false)
-	viper.SetDefault("agents", "deezer,lastfm,listenbrainz")
+	viper.SetDefault("agents", "listenbrainz")
 	viper.SetDefault("lastfm.enabled", true)
 	viper.SetDefault("lastfm.language", consts.DefaultInfoLanguage)
 	viper.SetDefault("lastfm.apikey", "")
