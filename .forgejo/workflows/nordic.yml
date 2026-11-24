@@ -1,11 +1,11 @@
-# nordic build: runs on Forgejo (forge.nordicsystems.tech), which pull-mirrors
+# nordic build (branch: dev): runs on Forgejo (forge.nordicsystems.tech), which pull-mirrors
 # github.com/Hawkeye4040/navidrome. Runner: rootless Podman on Fedora,
 # registered with the label "nordic-podman" (host executor).
 name: nordic
 
 on:
   push:
-    branches: [nordic]
+    branches: [dev]
   schedule:
     - cron: "17 4 * * 1" # weekly, Monday 04:17 UTC
   workflow_dispatch:
@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: https://code.forgejo.org/actions/checkout@v4
         with:
-          ref: nordic
+          ref: dev
           fetch-depth: 0
 
       - name: Fetch upstream release tags
@@ -44,7 +44,7 @@ jobs:
           set -euo pipefail
           target=${INPUT_TAG:-$(git tag -l 'v*' --sort=-v:refname | grep -vE -- '-(rc|beta|alpha)' | head -1)}
           vetted=$(git tag -l 'vetted/v*' --sort=-v:refname | head -1)
-          base=$(git describe --tags --abbrev=0 --match 'v*' nordic)
+          base=$(git describe --tags --abbrev=0 --match 'v*' HEAD)
           [ -n "$vetted" ] || { echo "no vetted/* tag found" >&2; exit 2; }
           echo "target=$target" >>"$GITHUB_OUTPUT"
           echo "base=$base" >>"$GITHUB_OUTPUT"
@@ -76,11 +76,11 @@ jobs:
       - name: Rebase needed?
         run: |
           if [ "${{ steps.refs.outputs.target }}" != "${{ steps.refs.outputs.base }}" ]; then
-            echo "::error::nordic is based on ${{ steps.refs.outputs.base }}; upstream released ${{ steps.refs.outputs.target }}. Review this run, then rebase nordic onto it."
+            echo "::error::dev is based on ${{ steps.refs.outputs.base }}; upstream released ${{ steps.refs.outputs.target }}. Review this run, then rebase dev onto it."
             exit 1
           fi
 
-  # Build whatever nordic currently is. Runs even when a rebase is pending,
+  # Build whatever dev currently is. Runs even when a rebase is pending,
   # so weekly runs still pick up Alpine security updates for the shipped tag.
   build:
     runs-on: nordic-podman
@@ -89,7 +89,7 @@ jobs:
     steps:
       - uses: https://code.forgejo.org/actions/checkout@v4
         with:
-          ref: nordic
+          ref: dev
           fetch-depth: 0
 
       - name: Fetch upstream release tags
