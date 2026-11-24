@@ -106,7 +106,6 @@ type configOptions struct {
 	EnableCoverAnimation            bool
 	EnableNowPlaying                bool
 	UIPlaybackReportInterval        time.Duration
-	GATrackingID                    string
 	EnableLogRedacting              bool
 	AuthRequestLimit                int
 	AuthWindowLength                time.Duration
@@ -1036,7 +1035,6 @@ func setViperDefaults() {
 	viper.SetDefault("shareurl", "")
 	viper.SetDefault("defaultshareexpiration", consts.DefaultShareExpiration)
 	viper.SetDefault("defaultdownloadableshare", false)
-	viper.SetDefault("gatrackingid", "")
 	viper.SetDefault("enableinsightscollector", false)
 	viper.SetDefault("enablescheduleddbanalyze", true)
 	viper.SetDefault("enablelogredacting", true)

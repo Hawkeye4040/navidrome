@@ -1,4 +1,3 @@
-import ReactGA from 'react-ga'
 import { Provider } from 'react-redux'
 import { createHashHistory } from 'history'
 import {
@@ -52,14 +51,6 @@ import missing from './missing/index.js'
 import { useEffect } from 'react'
 
 const history = createHashHistory()
-
-if (config.gaTrackingId) {
-  ReactGA.initialize(config.gaTrackingId)
-  history.listen((location) => {
-    ReactGA.pageview(location.pathname)
-  })
-  ReactGA.pageview(window.location.pathname)
-}
 
 const adminStore = createAdminStore({
   authProvider,

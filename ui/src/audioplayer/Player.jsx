@@ -9,7 +9,6 @@ import {
   useDataProvider,
   useTranslate,
 } from 'react-admin'
-import ReactGA from 'react-ga'
 import { GlobalHotKeys } from 'react-hotkeys'
 import ReactJkMusicPlayer from 'navidrome-music-player'
 import 'navidrome-music-player/assets/index.css'
@@ -303,13 +302,6 @@ const Player = () => {
             subsonic.reportPlayback(info.trackId, posMs, 'playing')
           }
           setHeartbeatTrackId(info.trackId)
-        }
-        if (config.gaTrackingId) {
-          ReactGA.event({
-            category: 'Player',
-            action: 'Play song',
-            label: `${song.title} - ${song.artist}`,
-          })
         }
         if (showNotifications) {
           sendNotification(

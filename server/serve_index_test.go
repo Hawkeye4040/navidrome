@@ -89,7 +89,6 @@ var _ = Describe("serveIndex", func() {
 		Entry("uiCoverArtSize", func() { conf.Server.UICoverArtSize = 300 }, "uiCoverArtSize", float64(300)),
 		Entry("enableCoverAnimation", func() { conf.Server.EnableCoverAnimation = true }, "enableCoverAnimation", true),
 		Entry("enableNowPlaying", func() { conf.Server.EnableNowPlaying = true }, "enableNowPlaying", true),
-		Entry("gaTrackingId", func() { conf.Server.GATrackingID = "UA-12345" }, "gaTrackingId", "UA-12345"),
 		Entry("defaultDownloadableShare", func() { conf.Server.DefaultDownloadableShare = true }, "defaultDownloadableShare", true),
 		Entry("devSidebarPlaylists", func() { conf.Server.DevSidebarPlaylists = true }, "devSidebarPlaylists", true),
 		Entry("lastFMEnabled", func() { conf.Server.LastFM.Enabled = true }, "lastFMEnabled", true),

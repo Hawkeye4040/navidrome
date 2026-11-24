@@ -14,7 +14,6 @@ const defaultConfig = {
   enableFavourites: true,
   losslessFormats: 'FLAC,WAV,ALAC,DSF',
   welcomeMessage: '',
-  gaTrackingId: '',
   devActivityPanel: true,
   enableStarRating: true,
   defaultTheme: 'Dark',
