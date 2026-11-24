@@ -978,7 +978,7 @@ func setViperDefaults() {
 	viper.SetDefault("baseurl", "")
 	viper.SetDefault("tlscert", "")
 	viper.SetDefault("tlskey", "")
-	viper.SetDefault("uiloginbackgroundurl", consts.DefaultUILoginBackgroundURL)
+	viper.SetDefault("uiloginbackgroundurl", consts.DefaultUILoginBackgroundURLOffline)
 	viper.SetDefault("uiwelcomemessage", "")
 	viper.SetDefault("maxsidebarplaylists", consts.DefaultMaxSidebarPlaylists)
 	viper.SetDefault("enabletranscodingconfig", false)
