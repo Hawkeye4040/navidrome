@@ -1,0 +1,3 @@
+# path|literal substring that must appear on the hit line|reason
+# Every exception is a reviewed, dead code path. Keep this list tiny.
+ui/public/3rdparty/workbox/workbox-sw.js|storage.googleapis.com/workbox-cdn|CDN fallback unused: ui/src/sw.js sets modulePathPrefix to local 3rdparty/workbox/, and workbox-offline-ga is not shipped
