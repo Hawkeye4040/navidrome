@@ -1,0 +1,23 @@
+# Hosts runtime code may reference. Exact match, or a leading "." to allow
+# the domain and all subdomains. Anything else added upstream fails diff-vet.
+localhost
+127.0.0.1
+# MetaBrainz (ListenBrainz scrobbling, discovery, MusicBrainz IDs)
+.listenbrainz.org
+.musicbrainz.org
+.metabrainz.org
+coverartarchive.org
+# Present upstream, disabled by default in nordic
+.last.fm
+ws.audioscrobbler.com
+api.deezer.com
+auth.deezer.com
+pipe.deezer.com
+# Project links
+.navidrome.org
+github.com
+# XML/SVG namespace identifiers (www.w3.org, subsonic.org), never fetched
+www.w3.org
+subsonic.org
+# License link in the OpenAPI spec
+www.gnu.org
