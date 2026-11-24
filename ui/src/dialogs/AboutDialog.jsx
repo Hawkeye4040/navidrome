@@ -20,7 +20,6 @@ import { makeStyles } from '@material-ui/core/styles'
 import config from '../config'
 import { DialogTitle } from './DialogTitle'
 import { DialogContent } from './DialogContent'
-import { INSIGHTS_DOC_URL } from '../consts.js'
 import subsonic from '../subsonic/index.js'
 import { Typography } from '@material-ui/core'
 import TableHead from '@material-ui/core/TableHead'
@@ -139,24 +138,8 @@ const ShowVersion = ({ uiVersion, serverVersion }) => {
   )
 }
 
-const AboutTabContent = ({
-  uiVersion,
-  serverVersion,
-  insightsData,
-  loading,
-  permissions,
-}) => {
+const AboutTabContent = ({ uiVersion, serverVersion }) => {
   const translate = useTranslate()
-
-  const lastRun = !loading && insightsData?.lastRun
-  let insightsStatus = 'N/A'
-  if (lastRun === 'disabled') {
-    insightsStatus = translate('about.links.insights.disabled')
-  } else if (lastRun && lastRun?.startsWith('1969-12-31')) {
-    insightsStatus = translate('about.links.insights.waiting')
-  } else if (lastRun) {
-    insightsStatus = lastRun
-  }
 
   return (
     <Table aria-label={translate('menu.about')} size="small">
@@ -183,16 +166,6 @@ const AboutTabContent = ({
             </TableRow>
           )
         })}
-        {permissions === 'admin' ? (
-          <TableRow>
-            <TableCell align="right" component="th" scope="row">
-              {translate(`about.links.lastInsightsCollection`)}:
-            </TableCell>
-            <TableCell align="left">
-              <Link href={INSIGHTS_DOC_URL}>{insightsStatus}</Link>
-            </TableCell>
-          </TableRow>
-        ) : null}
         <TableRow>
           <TableCell align="right" component="th" scope="row">
             <Link
@@ -380,9 +353,6 @@ const TabContent = ({
   showConfigTab,
   uiVersion,
   serverVersion,
-  insightsData,
-  loading,
-  permissions,
   configData,
 }) => {
   const translate = useTranslate()
@@ -409,13 +379,7 @@ const TabContent = ({
         aria-labelledby="about-tab"
         hidden={showConfigTab && tab === 1}
       >
-        <AboutTabContent
-          uiVersion={uiVersion}
-          serverVersion={serverVersion}
-          insightsData={insightsData}
-          loading={loading}
-          permissions={permissions}
-        />
+        <AboutTabContent uiVersion={uiVersion} serverVersion={serverVersion} />
       </div>
       {showConfigTab && (
         <div
@@ -434,10 +398,6 @@ const TabContent = ({
 const AboutDialog = ({ open, onClose }) => {
   const classes = useStyles()
   const { permissions } = usePermissions()
-  const { data: insightsData, loading } = useGetOne(
-    'insights',
-    'insights_status',
-  )
   const [serverVersion, setServerVersion] = useState('')
   const showConfigTab = permissions === 'admin' && config.devUIShowConfig
   const [tab, setTab] = useState(0)
@@ -481,9 +441,6 @@ const AboutDialog = ({ open, onClose }) => {
           showConfigTab={showConfigTab}
           uiVersion={uiVersion}
           serverVersion={serverVersion}
-          insightsData={insightsData}
-          loading={loading}
-          permissions={permissions}
           configData={configData}
         />
       </DialogContent>
